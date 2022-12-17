@@ -33,4 +33,13 @@ void field_allocate(struct grid*, struct EMfield*);
 /** deallocate electric and magnetic field */
 void field_deallocate(struct grid*, struct EMfield*);
 
+/** allocate field in cuda device */
+void field_cuda_allocate(struct grid *grd, struct EMfield *dev_field, struct EMfield *field);
+
+/** transfer field from host to device */
+void field_cuda_memcpy(struct grid *grd, struct EMfield *dst, struct EMfield *src, cudaMemcpyKind kind);
+
+/** deallocate field from cuda device */
+void field_cuda_deallocate(struct EMfield *dev_field);
+
 #endif
