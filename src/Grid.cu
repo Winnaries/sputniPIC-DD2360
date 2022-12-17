@@ -65,16 +65,14 @@ void setGrid(struct parameters* param, struct grid* grd)
 
 void grid_cuda_allocate(struct grid* dev_grd, struct grid* grd) 
 {
-    FPfield *XN_flat, *YN_flat, *ZN_flat;
-
     *dev_grd = *grd;
     int nx = grd->nxn; 
     int ny = grd->nyn; 
     int nz = grd->nzn; 
 
-    cudaMalloc(&XN_flat, nx * ny * nz * sizeof(FPfield)); 
-    cudaMalloc(&YN_flat, nx * ny * nz * sizeof(FPfield));
-    cudaMalloc(&ZN_flat, nx * ny * nz * sizeof(FPfield));
+    cudaMalloc(&dev_grd->XN_flat, nx * ny * nz * sizeof(FPfield)); 
+    cudaMalloc(&dev_grd->YN_flat, nx * ny * nz * sizeof(FPfield));
+    cudaMalloc(&dev_grd->ZN_flat, nx * ny * nz * sizeof(FPfield));
 }
 
 void grid_cuda_memcpy(struct grid *dst, struct grid *src, cudaMemcpyKind kind)

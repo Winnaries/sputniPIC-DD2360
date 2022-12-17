@@ -326,7 +326,7 @@ int mover_PC_gpu(struct particles *part, struct EMfield *field, struct grid *grd
 }
 
 /** particle mover */
-int mover_PC(struct particles *part, struct EMfield *field, struct grid *grd, struct parameters *param)
+int mover_PC(struct particles* part, struct EMfield* field, struct grid* grd, struct parameters* param)
 {
     // print species and subcycling
     std::cout << "***  MOVER with SUBCYCLYING "<< param->n_sub_cycles << " - species " << part->species_ID << " ***" << std::endl;
@@ -362,12 +362,12 @@ int mover_PC(struct particles *part, struct EMfield *field, struct grid *grd, st
                 iz = 2 +  int((part->z[i] - grd->zStart)*grd->invdz);
                 
                 // calculate weights
-                xi[0]   = part->x[i] - grd->XN_flat[get_idx(ix - 1, iy, iz, grd->nyn, grd->nzn)];
-                eta[0]  = part->y[i] - grd->YN_flat[get_idx(ix, iy - 1, iz, grd->nyn, grd->nzn)];
-                zeta[0] = part->z[i] - grd->ZN_flat[get_idx(ix, iy, iz - 1, grd->nyn, grd->nzn)];
-                xi[1]   = grd->XN_flat[get_idx(ix, iy, iz, grd->nyn, grd->nzn)] - part->x[i];
-                eta[1]  = grd->YN_flat[get_idx(ix, iy, iz, grd->nyn, grd->nzn)] - part->y[i];
-                zeta[1] = grd->ZN_flat[get_idx(ix, iy, iz, grd->nyn, grd->nzn)] - part->z[i];
+                xi[0]   = part->x[i] - grd->XN[ix - 1][iy][iz];
+                eta[0]  = part->y[i] - grd->YN[ix][iy - 1][iz];
+                zeta[0] = part->z[i] - grd->ZN[ix][iy][iz - 1];
+                xi[1]   = grd->XN[ix][iy][iz] - part->x[i];
+                eta[1]  = grd->YN[ix][iy][iz] - part->y[i];
+                zeta[1] = grd->ZN[ix][iy][iz] - part->z[i];
                 for (int ii = 0; ii < 2; ii++)
                     for (int jj = 0; jj < 2; jj++)
                         for (int kk = 0; kk < 2; kk++)
@@ -379,12 +379,12 @@ int mover_PC(struct particles *part, struct EMfield *field, struct grid *grd, st
                 for (int ii=0; ii < 2; ii++)
                     for (int jj=0; jj < 2; jj++)
                         for(int kk=0; kk < 2; kk++){
-                            Exl += weight[ii][jj][kk]*field->Ex_flat[get_idx(ix- ii, iy -jj, iz- kk , grd->nyn, grd->nzn)];
-                            Eyl += weight[ii][jj][kk]*field->Ey_flat[get_idx(ix- ii, iy -jj, iz- kk , grd->nyn, grd->nzn)];
-                            Ezl += weight[ii][jj][kk]*field->Ez_flat[get_idx(ix- ii, iy -jj, iz -kk , grd->nyn, grd->nzn)];
-                            Bxl += weight[ii][jj][kk]*field->Bxn_flat[get_idx(ix- ii, iy -jj, iz -kk , grd->nyn, grd->nzn)];
-                            Byl += weight[ii][jj][kk]*field->Byn_flat[get_idx(ix- ii, iy -jj, iz -kk , grd->nyn, grd->nzn)];
-                            Bzl += weight[ii][jj][kk]*field->Bzn_flat[get_idx(ix- ii, iy -jj, iz -kk , grd->nyn, grd->nzn)];
+                            Exl += weight[ii][jj][kk]*field->Ex[ix- ii][iy -jj][iz- kk ];
+                            Eyl += weight[ii][jj][kk]*field->Ey[ix- ii][iy -jj][iz- kk ];
+                            Ezl += weight[ii][jj][kk]*field->Ez[ix- ii][iy -jj][iz -kk ];
+                            Bxl += weight[ii][jj][kk]*field->Bxn[ix- ii][iy -jj][iz -kk ];
+                            Byl += weight[ii][jj][kk]*field->Byn[ix- ii][iy -jj][iz -kk ];
+                            Bzl += weight[ii][jj][kk]*field->Bzn[ix- ii][iy -jj][iz -kk ];
                         }
                 
                 // end interpolation
@@ -478,11 +478,14 @@ int mover_PC(struct particles *part, struct EMfield *field, struct grid *grd, st
             }
                                                                     
             
+            
         }  // end of subcycling
     } // end of one particle
                                                                         
     return(0); // exit succcesfully
 } // end of the mover
+
+
 
 /** Interpolation Particle --> Grid: This is for species */
 void interpP2G(struct particles* part, struct interpDensSpecies* ids, struct grid* grd)
