@@ -291,7 +291,7 @@ __global__ void mover_kernel(struct particles part, struct EMfield field, struct
 /** cuda particle mover */
 int mover_PC_gpu(struct particles *part, struct EMfield *field, struct grid *grd, struct parameters *param)
 {
-    std::cout << "*** MOVER with SUBCYCLYING " << param->n_sub_cycles << " - species " << part->species_ID << " ***" << std::endl;
+    std::cout << "*** CUDA MOVER with SUBCYCLYING " << param->n_sub_cycles << " - species " << part->species_ID << " ***" << std::endl;
 
     // device allocation & memcpy
     struct particles dev_part;
@@ -312,6 +312,13 @@ int mover_PC_gpu(struct particles *part, struct EMfield *field, struct grid *grd
     for (int i_sub = 0; i_sub < part->n_sub_cycles; i_sub++)
     {
         mover_kernel<<<numBlocks, numThreads>>>(dev_part, dev_field, dev_grd, *param);
+
+        cudaError_t cuError = cudaGetLastError();
+        if (cudaSuccess != cuError)
+        {
+            printf("Failed in kernel launch and reason is %s\n", cudaGetErrorString(cuError));
+            return 1;
+        }
     }
 
     particle_cuda_memcpy(part, &dev_part, cudaMemcpyDeviceToHost);
@@ -329,7 +336,7 @@ int mover_PC_gpu(struct particles *part, struct EMfield *field, struct grid *grd
 int mover_PC(struct particles* part, struct EMfield* field, struct grid* grd, struct parameters* param)
 {
     // print species and subcycling
-    std::cout << "***  MOVER with SUBCYCLYING "<< param->n_sub_cycles << " - species " << part->species_ID << " ***" << std::endl;
+    std::cout << "*** MOVER with SUBCYCLYING "<< param->n_sub_cycles << " - species " << part->species_ID << " ***" << std::endl;
  
     // auxiliary variables
     FPpart dt_sub_cycling = (FPpart) param->dt/((double) part->n_sub_cycles);
