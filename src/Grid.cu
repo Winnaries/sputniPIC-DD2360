@@ -51,7 +51,6 @@ void setGrid(struct parameters* param, struct grid* grd)
     grd->YN  = newArr3<FPfield>(&grd->YN_flat, grd->nxn, grd->nyn, grd->nzn);
     grd->ZN  = newArr3<FPfield>(&grd->ZN_flat, grd->nxn, grd->nyn, grd->nzn);
     
-    
     // calculate the coordinates - Nodes
     for (int i = 0; i < grd->nxn; i++) {
         for (int j = 0; j < grd->nyn; j++) {
@@ -62,6 +61,36 @@ void setGrid(struct parameters* param, struct grid* grd)
             }
         }
     }
+}
+
+void grid_cuda_allocate(struct grid* dev_grd, struct grid* grd) 
+{
+    *dev_grd = *grd;
+    int nx = grd->nxn; 
+    int ny = grd->nyn; 
+    int nz = grd->nzn; 
+
+    cudaMalloc(&dev_grd->XN_flat, nx * ny * nz * sizeof(FPfield)); 
+    cudaMalloc(&dev_grd->YN_flat, nx * ny * nz * sizeof(FPfield));
+    cudaMalloc(&dev_grd->ZN_flat, nx * ny * nz * sizeof(FPfield));
+}
+
+void grid_cuda_memcpy(struct grid *dst, struct grid *src, cudaMemcpyKind kind)
+{
+    int nx = dst->nxn;
+    int ny = dst->nyn;
+    int nz = dst->nzn;
+
+    cudaMemcpy(dst->XN_flat, src->XN_flat, nx * ny * nz * sizeof(FPfield), kind);
+    cudaMemcpy(dst->YN_flat, src->YN_flat, nx * ny * nz * sizeof(FPfield), kind);
+    cudaMemcpy(dst->ZN_flat, src->ZN_flat, nx * ny * nz * sizeof(FPfield), kind);
+}
+
+void grid_cuda_deallocate(struct grid *dev_grd) 
+{
+    cudaFree(dev_grd->XN_flat);
+    cudaFree(dev_grd->YN_flat);
+    cudaFree(dev_grd->ZN_flat);
 }
 
 /** Set up the grid quantities */
